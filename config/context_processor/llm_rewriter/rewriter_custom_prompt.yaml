@@ -1,0 +1,24 @@
+# LLM Rewriter Configuration - Custom Prompt
+# Example with a custom rewriting prompt and concatenation
+
+init_args: 
+  _target_: models.context_processors.llm_rewriter.LLMRewriter
+  generator: null  # Will be set to the same generator instance from main config
+  batch_size: 4
+  max_new_tokens: 256
+  process_separately: true
+  concatenate_original: true  # Append rewritten to original (set false to replace)
+  rewrite_prompt_template: |
+    You are a helpful assistant that refines text passages to be more relevant to a given query.
+    
+    Task: Rewrite the passage below to make it more relevant to the query. 
+    - Remove information that is not relevant to the query
+    - Highlight and expand on information that is relevant
+    - Keep the rewritten passage clear and concise
+    - Maintain factual accuracy
+    
+    Query: {query}
+    
+    Passage: {passage}
+    
+    Refined Passage:

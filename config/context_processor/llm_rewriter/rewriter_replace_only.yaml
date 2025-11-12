@@ -1,0 +1,10 @@
+# LLM Rewriter Configuration - Replace Mode
+# Rewrites documents and REPLACES original (does not concatenate)
+
+init_args: 
+  _target_: models.context_processors.llm_rewriter.LLMRewriter
+  generator: null  # Will be set to the same generator instance from main config
+  batch_size: 4
+  max_new_tokens: 256
+  process_separately: true
+  concatenate_original: false  # Replace original with rewritten (no concatenation)

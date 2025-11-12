@@ -189,7 +189,16 @@ class RAG:
 
         self.query_generator = GenerateQueries(self.generator, **query_generator_config) if query_generator_config is not None else None
 
-        self.context_processor = ProcessContext(**context_processor_config) if context_processor_config is not None else None
+        # Init context processor with generator injection for LLM rewriter
+        if context_processor_config is not None:
+            # Check if context processor needs generator (LLM rewriter)
+            if hasattr(context_processor_config, 'init_args') and \
+               'llm_rewriter' in context_processor_config.init_args.get('_target_', '').lower():
+                # Inject generator into context processor config
+                context_processor_config.init_args.generator = self.generator
+            self.context_processor = ProcessContext(**context_processor_config)
+        else:
+            self.context_processor = None
         
         # print RAG model
         print_rag_model(self, retriever_config, reranker_config, generator_config)

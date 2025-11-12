@@ -1,0 +1,9 @@
+# LLM Rewriter Configuration - With Title Preservation
+# Preserves document titles, rewrites content, and concatenates with original
+
+init_args: 
+  _target_: models.context_processors.llm_rewriter.LLMRewriterWithTitle
+  generator: null  # Will be set to the same generator instance from main config
+  batch_size: 4
+  max_new_tokens: 256
+  concatenate_original: true  # Append rewritten to original (set false to replace)

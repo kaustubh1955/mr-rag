@@ -1,0 +1,10 @@
+# LLM Rewriter Configuration - Combined Mode
+# Rewrites all documents together and concatenates with originals
+
+init_args: 
+  _target_: models.context_processors.llm_rewriter.LLMRewriter
+  generator: null  # Will be set to the same generator instance from main config
+  batch_size: 2  # Lower batch size as we're processing multiple docs together
+  max_new_tokens: 512  # More tokens needed for combined rewriting
+  process_separately: false  # Rewrite all docs together
+  concatenate_original: true  # Append rewritten to originals (set false to replace)
