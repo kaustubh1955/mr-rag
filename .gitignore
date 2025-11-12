@@ -1,0 +1,13 @@
+experiments/
+datasets/
+indexes/
+datasets/
+__pycache__
+*.swp
+tests/dataset/
+tests/index/
+tests/exp/
+tests/run/
+outputs/
+results/
+wandb/
