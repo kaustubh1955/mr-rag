@@ -2,6 +2,7 @@ init_args:
   _target_: models.generators.llm.LLM
   model_name: "meta-llama/Meta-Llama-3-8B-Instruct"
   max_new_tokens: 128
-  max_length: 2048
+  max_length: 1024
   quantization: "int4"
-  batch_size: 8
+  batch_size: 1
+  attn_implementation: "sdpa"

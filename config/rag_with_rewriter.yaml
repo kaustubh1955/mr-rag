@@ -6,7 +6,7 @@ defaults:
     - retriever: contriever  # or any other retriever
     - reranker: null  # optional
     - generator: llama-3-8b-instruct  # or any other generator
-    - dataset: kilt_nq  # or your dataset
+    - dataset: mkqa/mkqa_fr.retrieve_fr  # MKQA French queries with French Wikipedia (will auto-download)
     - train: null
     - prompt: basic
     - context_processor: llm_rewriter/rewriter_basic  # Enable LLM rewriter

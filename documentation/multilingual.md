@@ -33,7 +33,12 @@ Currently supported languages:
 * for XOR TyDi QA: `fi`, `ko`, `ar`, `ru`, `ja` (+`en` in TyDI QA)
 
 Usage:
-* MKQA: `dataset="mkqa/mkqa_${lang}.${retrieval_option}"`
+* MKQA: `dataset="mkqa/mkqa_${lang}.${retrieval_option}"`These minimum requirements are specific to this allocation attempt and may vary. Consider increasing the available memory for these devices to at least the specified minimum, or adjusting the model config.
+Loading checkpoint shards:  25%|█████████████▌                                        | 1/4 [00:05<00:16,  5.55s/it]
+Error executing job with overrides: []
+Error in call to target 'models.generators.llm.LLM':
+OutOfMemoryError('CUDA out of memory. Tried to allocate 28.00 MiB. GPU 3 has a total capacity of 10.75 GiB of which 30.69 MiB is free. Process 751096 has 10.02 GiB memory in use. Including non-PyTorch memory, this process has 706.00 MiB memory in use. Of the allocated memory 466.56 MiB is allocated by PyTorch, and 61.44 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)')
+full_key: generator.init_args
 * XOR TyDi QA: `dataset="xor_tydiqa/xor_tydiqa_${lang}.${retrieval_option}"`
 * `${lang}` denotes language of user queries (see above)
 * `${retrieval_option}` denotes the language setting for retrieval:
