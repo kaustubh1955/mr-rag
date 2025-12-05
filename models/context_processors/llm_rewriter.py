@@ -111,7 +111,15 @@ Rewritten Passage:"""
                     
                     # Generate using the LLM
                     try:
-                        generated = self.generator.generate(batch_prompts)
+                        # Tokenize the batch prompts
+                        tokenized = self.generator.tokenizer(
+                            batch_prompts,
+                            padding=True,
+                            truncation=True,
+                            max_length=self.generator.max_length if hasattr(self.generator, 'max_length') else 2048,
+                            return_tensors='pt'
+                        )
+                        generated = self.generator.generate(tokenized)
                         rewritten_passages.extend(generated)
                     except Exception as e:
                         print(f"Error during generation: {e}")
@@ -162,7 +170,15 @@ Rewritten Passage:"""
                     batch_prompts = all_prompts[batch_start:min(batch_start + self.batch_size, len(all_prompts))]
                     
                     try:
-                        generated = self.generator.generate(batch_prompts)
+                        # Tokenize the batch prompts
+                        tokenized = self.generator.tokenizer(
+                            batch_prompts,
+                            padding=True,
+                            truncation=True,
+                            max_length=self.generator.max_length if hasattr(self.generator, 'max_length') else 2048,
+                            return_tensors='pt'
+                        )
+                        generated = self.generator.generate(tokenized)
                         rewritten_combined.extend(generated)
                     except Exception as e:
                         print(f"Error during generation: {e}")
@@ -289,7 +305,15 @@ Rewritten Content:"""
                 batch_prompts = all_prompts[batch_start:min(batch_start + self.batch_size, len(all_prompts))]
                 
                 try:
-                    generated = self.generator.generate(batch_prompts)
+                    # Tokenize the batch prompts
+                    tokenized = self.generator.tokenizer(
+                        batch_prompts,
+                        padding=True,
+                        truncation=True,
+                        max_length=self.generator.max_length if hasattr(self.generator, 'max_length') else 2048,
+                        return_tensors='pt'
+                    )
+                    generated = self.generator.generate(tokenized)
                     rewritten_contents.extend(generated)
                 except Exception as e:
                     print(f"Error during generation: {e}")

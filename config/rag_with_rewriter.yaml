@@ -18,7 +18,7 @@ index_folder: 'indexes/'
 runs_folder: 'runs/'
 generated_query_folder: 'generated_queries/'
 processed_context_folder: 'processed_contexts/'
-experiments_folder: 'experiments/'   
+experiments_folder: 'experiments/'
 
 # Retrieval and generation settings
 retrieve_top_k: 50

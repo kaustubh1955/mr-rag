@@ -194,9 +194,19 @@ class RAG:
             # Check if context processor needs generator (LLM rewriter)
             if hasattr(context_processor_config, 'init_args') and \
                'llm_rewriter' in context_processor_config.init_args.get('_target_', '').lower():
-                # Inject generator into context processor config
-                context_processor_config.init_args.generator = self.generator
-            self.context_processor = ProcessContext(**context_processor_config)
+                # Manually instantiate the LLM rewriter with generator, then wrap it
+                processor_instance = instantiate(context_processor_config.init_args, generator=self.generator)
+                # Create a wrapper that mimics ProcessContext behavior
+                class ContextProcessorWrapper:
+                    def __init__(self, model):
+                        self.model = model
+                    def eval(self, contexts, queries):
+                        return self.model.process(contexts, queries)
+                    def get_clean_model_name(self):
+                        return self.model.name
+                self.context_processor = ContextProcessorWrapper(processor_instance)
+            else:
+                self.context_processor = ProcessContext(**context_processor_config)
         else:
             self.context_processor = None
         
