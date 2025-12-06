@@ -33,6 +33,7 @@ class LLMRewriter(ContextProcessor):
         rewrite_prompt_template: str = None,
         process_separately: bool = True,
         concatenate_original: bool = True,
+        low_resource_langs: List[str] = None,
     ):
         super().__init__()
         self.generator = generator
@@ -41,6 +42,8 @@ class LLMRewriter(ContextProcessor):
         self.process_separately = process_separately
         self.concatenate_original = concatenate_original
         self.name = f"llm_rewriter_{self.generator.model_name.replace('/', '_')}"
+        self.low_resource_langs = sorted(set(low_resource_langs or ["ar", "th", "fi"]))
+        self.low_resource_langs_str = ", ".join(self.low_resource_langs)
         
         # Default prompt template for rewriting
         if rewrite_prompt_template is None:
@@ -49,6 +52,7 @@ class LLMRewriter(ContextProcessor):
 2. Highlight information relevant to the query
 3. Integrate any relevant knowledge to make it more coherent
 4. Keep the passage concise and focused
+5. Language rule: keep the rewritten output in the passage's original language unless the passage is in a low-resource language ({low_resource_langs}). Only translate to English for those low-resource languages.
 
 Query: {query}
 
@@ -88,7 +92,11 @@ Rewritten Passage:"""
                 for doc_idx, doc in enumerate(docs):
                     if len(doc.strip()) == 0:
                         continue
-                    prompt = self.rewrite_prompt_template.format(query=query, passage=doc)
+                    prompt = self.rewrite_prompt_template.format(
+                        query=query, 
+                        passage=doc, 
+                        low_resource_langs=self.low_resource_langs_str
+                    )
                     all_prompts.append(prompt)
                     query_doc_mapping.append((query_idx, doc_idx))
             
@@ -159,7 +167,11 @@ Rewritten Passage:"""
             for query, docs in zip(queries, contexts):
                 # Combine all docs into one passage
                 combined_passage = "\n\n".join([f"Passage {i+1}: {doc}" for i, doc in enumerate(docs) if len(doc.strip()) > 0])
-                prompt = self.rewrite_prompt_template.format(query=query, passage=combined_passage)
+                prompt = self.rewrite_prompt_template.format(
+                    query=query, 
+                    passage=combined_passage,
+                    low_resource_langs=self.low_resource_langs_str
+                )
                 all_prompts.append(prompt)
             
             # Generate rewritten passages in batches
@@ -223,6 +235,7 @@ class LLMRewriterWithTitle(ContextProcessor):
         max_new_tokens: int = 256,
         rewrite_prompt_template: str = None,
         concatenate_original: bool = True,
+        low_resource_langs: List[str] = None,
     ):
         super().__init__()
         self.generator = generator
@@ -230,6 +243,8 @@ class LLMRewriterWithTitle(ContextProcessor):
         self.max_new_tokens = max_new_tokens
         self.concatenate_original = concatenate_original
         self.name = f"llm_rewriter_title_{self.generator.model_name.replace('/', '_')}"
+        self.low_resource_langs = sorted(set(low_resource_langs or ["ar", "th", "fi"]))
+        self.low_resource_langs_str = ", ".join(self.low_resource_langs)
         
         # Default prompt template for rewriting with title preservation
         if rewrite_prompt_template is None:
@@ -238,6 +253,7 @@ class LLMRewriterWithTitle(ContextProcessor):
 2. Highlight information relevant to the query
 3. Integrate any relevant knowledge to make it more coherent
 4. Keep the passage concise and focused
+5. Language rule: keep the rewritten output in the passage's original language unless the passage is in a low-resource language ({low_resource_langs}). Only translate to English for those low-resource languages.
 
 Do NOT include the title in your response, only output the rewritten content.
 
@@ -292,7 +308,8 @@ Rewritten Content:"""
                 prompt = self.rewrite_prompt_template.format(
                     query=query, 
                     title=title, 
-                    content=content
+                    content=content,
+                    low_resource_langs=self.low_resource_langs_str
                 )
                 all_prompts.append(prompt)
                 query_doc_mapping.append((query_idx, doc_idx))
