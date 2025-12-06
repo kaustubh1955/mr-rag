@@ -42,7 +42,21 @@ class LLMRewriter(ContextProcessor):
         self.process_separately = process_separately
         self.concatenate_original = concatenate_original
         self.name = f"llm_rewriter_{self.generator.model_name.replace('/', '_')}"
-        self.low_resource_langs = sorted(set(low_resource_langs or ["ar", "th", "fi"]))
+        self.low_resource_langs = sorted(set(low_resource_langs or [
+            # Low-resource languages
+            "km",  # Khmer
+            "th",  # Thai
+            "vi",  # Vietnamese
+            "he",  # Hebrew
+            "ms",  # Malay
+            "fi",  # Finnish
+            "hu",  # Hungarian
+            "da",  # Danish
+            "sv",  # Swedish
+            "no",  # Norwegian
+            "zh_hk",  # Chinese (Hong Kong)
+            "zh_tw",  # Chinese (Traditional)
+        ]))
         self.low_resource_langs_str = ", ".join(self.low_resource_langs)
         
         # Default prompt template for rewriting
@@ -243,7 +257,21 @@ class LLMRewriterWithTitle(ContextProcessor):
         self.max_new_tokens = max_new_tokens
         self.concatenate_original = concatenate_original
         self.name = f"llm_rewriter_title_{self.generator.model_name.replace('/', '_')}"
-        self.low_resource_langs = sorted(set(low_resource_langs or ["ar", "th", "fi"]))
+        self.low_resource_langs = sorted(set(low_resource_langs or [
+            # Low-resource languages
+            "km",  # Khmer
+            "th",  # Thai
+            "vi",  # Vietnamese
+            "he",  # Hebrew
+            "ms",  # Malay
+            "fi",  # Finnish
+            "hu",  # Hungarian
+            "da",  # Danish
+            "sv",  # Swedish
+            "no",  # Norwegian
+            "zh_hk",  # Chinese (Hong Kong)
+            "zh_tw",  # Chinese (Traditional)
+        ]))
         self.low_resource_langs_str = ", ".join(self.low_resource_langs)
         
         # Default prompt template for rewriting with title preservation
