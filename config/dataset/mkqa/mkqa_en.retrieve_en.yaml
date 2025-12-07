@@ -4,8 +4,9 @@ train:
 dev:
     doc:
       init_args:
-        _target_: modules.dataset_processor.KILT100w
-        split: full
+        _target_: modules.dataset_processor.Wiki_monolingual_100w
+        split: train
+        lang: en
     query:
       init_args:
         _target_: modules.processors.mrag_dataset_processor.MKQA

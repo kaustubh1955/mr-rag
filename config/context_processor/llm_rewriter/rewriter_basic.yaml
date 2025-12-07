@@ -4,7 +4,7 @@
 init_args: 
   _target_: models.context_processors.llm_rewriter.LLMRewriter
   generator: null  # Will be set to the same generator instance from main config
-  batch_size: 4
-  max_new_tokens: 256
-  process_separately: true  # Rewrite each document individually
+  batch_size: 24
+  max_new_tokens: 64
+  process_separately: false # Rewrite each document individually
   concatenate_original: true  # Append rewritten to original (set false to replace)

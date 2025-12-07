@@ -28,10 +28,10 @@ class LLMRewriter(ContextProcessor):
     def __init__(
         self, 
         generator=None,
-        batch_size: int = 4,
-        max_new_tokens: int = 256,
+        batch_size: int = 24,
+        max_new_tokens: int = 128,
         rewrite_prompt_template: str = None,
-        process_separately: bool = True,
+        process_separately: bool = False,
         concatenate_original: bool = True,
         low_resource_langs: List[str] = None,
     ):
@@ -96,6 +96,8 @@ Rewritten Passage:"""
         # Store original max_new_tokens to restore later
         original_max_new_tokens = self.generator.max_new_tokens
         self.generator.max_new_tokens = self.max_new_tokens
+        print("process_separately:", self.process_separately)
+        print("batch_size:", self.batch_size)
         
         if self.process_separately:
             # Rewrite each document separately
@@ -116,20 +118,12 @@ Rewritten Passage:"""
             
             # Generate rewritten passages in batches
             rewritten_passages = []
+            print("Total prompts:", len(all_prompts))
             with torch.no_grad():
                 for batch_start in tqdm(range(0, len(all_prompts), self.batch_size), 
                                        desc='Rewriting contexts...'):
                     batch_prompts = all_prompts[batch_start:min(batch_start + self.batch_size, len(all_prompts))]
                     
-                    # Create minimal data dict for generation
-                    batch_dict = {
-                        'model_input': batch_prompts,
-                        'q_id': [f"temp_{i}" for i in range(len(batch_prompts))],
-                        'instruction': batch_prompts,
-                        'query': batch_prompts,
-                        'label': [None] * len(batch_prompts),
-                        'ranking_label': [None] * len(batch_prompts),
-                    }
                     
                     # Generate using the LLM
                     try:
@@ -245,8 +239,8 @@ class LLMRewriterWithTitle(ContextProcessor):
     def __init__(
         self, 
         generator=None,
-        batch_size: int = 4,
-        max_new_tokens: int = 256,
+        batch_size: int = 24,
+        max_new_tokens: int = 64,
         rewrite_prompt_template: str = None,
         concatenate_original: bool = True,
         low_resource_langs: List[str] = None,
