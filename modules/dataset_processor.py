@@ -601,36 +601,97 @@ class MergedDocDataset(Processor):
         assert len(in_dataset_names) == len(in_dataset_splits)
 
     def process(self):
-        raise NotImplementedError("Datasets for merging should be preprocessed independently before runing experiments with the merged dataset.")
+        """
+        Automatically download each wiki-100w-<lang> dataset if missing,
+        exactly like Wiki_monolingual_100w does.
+        """
+        from functools import partial
+        import datasets
 
-    def get_dataset(self):
         def prepend_label(example, label):
             example['id'] = f"{label}_{example['id']}"
             return example
-        print(f"Processing dataset {self.dataset_name} in {self.split} split ")
-        debug_str = '_debug' if self.debug else ''
-        assert self.dataset_name != None # dataset name needs to be set in processor class
-        oracle_provenance_str = '_oracle_provenance' if self.oracle_provenance else ''
-        out_folder = os.path.join(f'{self.out_folder}', f'{self.dataset_name}_{self.split}{oracle_provenance_str}')
 
-        loaded_datasets = []
+        oracle_provenance_str = '_oracle_provenance' if self.oracle_provenance else ''
+        loaded = []
+
         for dataset_name, split in zip(self.in_dataset_names, self.in_dataset_splits):
-            in_folder = os.path.join(f'{self.out_folder}', f'{dataset_name}_{split}{oracle_provenance_str}')
-            if not os.path.exists(in_folder): raise ValueError(f"Dataset {in_folder} not found")
-            dataset = datasets.load_from_disk(in_folder)
-            dataset = dataset.map(partial(prepend_label, label=dataset_name), num_proc=self.num_proc)
-            loaded_datasets.append(dataset)
-            
-        dataset = datasets.concatenate_datasets(loaded_datasets)
-        
-        id2index = self.get_index_to_id(dataset) 
-        dataset.id2index = id2index
-        if self.debug:
-            dataset = dataset.select(range(50))
-        if self.shuffle_labels:
-            dataset = self.shuffled_labels_as_content(dataset)
-        dataset.name = self.dataset_name + debug_str + oracle_provenance_str
-        return dataset
+
+            # Expect name like wiki-100w-fr → extract "fr"
+            assert dataset_name.startswith("wiki-100w-"), (
+                f"MergedDocDataset only supports wiki-100w-* datasets. Got {dataset_name}"
+            )
+
+            lang = dataset_name.split("wiki-100w-")[1]
+
+            out_dir = os.path.join(
+                self.out_folder,
+                f"{dataset_name}_{split}{oracle_provenance_str}"
+            )
+
+            # If folder exists → load it
+            if os.path.exists(out_dir) and not self.overwrite:
+                ds = datasets.load_from_disk(out_dir)
+
+            else:
+                # EXACT SAME DOWNLOAD LOGIC AS WIKI_MONOLINGUAL_100W
+                print(f"Downloading dataset for language: {lang}")
+
+                hf_name = "wikimedia/wikipedia"
+                subset = f"20231101.{lang}"
+
+                raw = datasets.load_dataset(
+                    hf_name,
+                    subset,
+                    num_proc=self.num_proc
+                )[split]
+
+                # SAME 100-word chunking
+                def map_100w(sample, num_words=100):
+                    wiki_id = sample['id']
+                    title = sample['title']
+                    text = sample['text']
+
+                    # Chinese/Japanese/Thai tokenization edge case
+                    if lang in ["zh", "ja", "th"]:
+                        words = list(text)
+                    else:
+                        words = text.split()
+
+                    paragraphs = [
+                        title + ". " + " ".join(words[i:i + num_words])
+                        for i in range(0, len(words), num_words)
+                    ]
+                    wiki_ids = [wiki_id] * len(paragraphs)
+
+                    return {"paragraphs": paragraphs, "wikipedia_id": wiki_ids}
+
+                kilt = raw.map(map_100w, num_proc=self.num_proc)
+                paragraphs = [p for sub in kilt["paragraphs"] for p in sub]
+                wiki_ids = [i for sub in kilt["wikipedia_id"] for i in sub]
+
+                ds = datasets.Dataset.from_dict({
+                    "content": paragraphs,
+                    "wikipedia_id": wiki_ids
+                }).map(
+                    lambda e, idx: {"id": str(idx), **e},
+                    with_indices=True
+                )
+
+                # Save like monolingual does
+                ds.save_to_disk(out_dir)
+
+            # Add prefix to ids
+            ds = ds.map(
+                partial(prepend_label, label=dataset_name),
+                num_proc=self.num_proc
+            )
+            loaded.append(ds)
+
+        # Merge all languages
+        return datasets.concatenate_datasets(loaded)
+
+
     
 
 class ProcessDatasets:

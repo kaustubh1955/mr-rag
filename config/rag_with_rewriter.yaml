@@ -6,13 +6,13 @@ defaults:
     - retriever: bge-m3  # or any other retriever
     - reranker: null  # optional
     - generator: llama-3-8b-instruct  # or any other generator
-    - dataset: mkqa/mkqa_fr.retrieve_fr  # MKQA French queries with French Wikipedia (will auto-download)
+    - dataset: mkqa/mkqa_de.retrieve_all  # MKQA French queries with French Wikipedia (will auto-download)
     - train: null
     - prompt: basic
     - context_processor: llm_rewriter/rewriter_basic  # Enable LLM rewriter
 
 # Main configuration
-run_name: "rag_with_llm_rewriter_2"
+run_name: "rag_with_llm_rewriter_3"
 dataset_folder: 'datasets/'
 index_folder: 'indexes/'
 runs_folder: 'runs/'
